@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 class MapNavButton extends StatefulWidget {
   final String label;
   final IconData iconData;
-  MapNavButton(this.iconData, this.label);
+  final Function onTap;
+  MapNavButton(this.iconData, this.label, this.onTap);
   @override
   _MapNavButtonState createState() => _MapNavButtonState();
 }
@@ -17,19 +18,14 @@ class _MapNavButtonState extends State<MapNavButton> {
       child: Container(
         padding: EdgeInsets.only(left: 16),
         child: !_folded
-            ? Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      widget.label,
-                      style: TextStyle(color: Colors.white, fontSize: 15),
-                    ),
+            ? Expanded(
+                child: InkWell(
+                  onTap: widget.onTap,
+                  child: Text(
+                    widget.label,
+                    style: TextStyle(color: Colors.white, fontSize: 15),
                   ),
-                  Icon(
-                    widget.iconData,
-                    color: Colors.white,
-                  )
-                ],
+                ),
               )
             : null,
       ),
@@ -45,9 +41,7 @@ class _MapNavButtonState extends State<MapNavButton> {
       ),
       child: Row(
         children: [
-          Expanded(
-            child: singleChildScrollView,
-          ),
+          Expanded(child: singleChildScrollView),
           Container(
             child: Material(
               type: MaterialType.transparency,
@@ -61,7 +55,7 @@ class _MapNavButtonState extends State<MapNavButton> {
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Icon(
-                    _folded ? Icons.navigate_before : Icons.close,
+                    _folded ? widget.iconData : Icons.close,
                     color: Colors.yellow[800],
                   ),
                 ),
