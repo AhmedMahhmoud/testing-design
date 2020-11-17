@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:hovo_design/HomeDesign.dart';
+import 'package:hovo_design/screens/HomeDesign.dart';
+import 'package:hovo_design/screens/furniture.dart';
 
 void main() {
   runApp(MyApp());

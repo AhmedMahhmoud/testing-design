@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:hovo_design/screens/furniture.dart';
 import 'package:hovo_design/widgets/animatedContainer.dart';
 import 'package:location/location.dart';
 import 'package:search_map_place/search_map_place.dart';
@@ -38,6 +39,12 @@ class _HomesDesignState extends State<HomesDesign> {
   }
 
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+
+  @override
   void dispose() {
     _controller.dispose();
     // TODO: implement dispose
@@ -47,6 +54,7 @@ class _HomesDesignState extends State<HomesDesign> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: FutureBuilder(
         future: getCurrentPos(),
         builder: (context, snapshot) {
@@ -76,14 +84,15 @@ class _HomesDesignState extends State<HomesDesign> {
                     apiKey: "AIzaSyCyt_eysLh70lE25053JEzJaTYsvrQGfRE ",
                     language: "eg",
                     onSelected: (Place place) async {
-                      final geolocation = await place.geolocation;
-
+                      final Geolocation geolocation = await place.geolocation;
+                      print(geolocation.coordinates);
                       // Will animate the GoogleMap camera, taking us to the selected position with an appropriate zoom
-
-                      _controller.animateCamera(
-                          CameraUpdate.newLatLng(geolocation.coordinates));
-                      _controller.animateCamera(
-                          CameraUpdate.newLatLngBounds(geolocation.bounds, 0));
+                      setState(() {
+                        _controller.animateCamera(
+                            CameraUpdate.newLatLng(geolocation.coordinates));
+                        _controller.animateCamera(CameraUpdate.newLatLngBounds(
+                            geolocation.bounds, 0));
+                      });
                     },
                   ),
                 ),
@@ -91,23 +100,25 @@ class _HomesDesignState extends State<HomesDesign> {
                   right: 0,
                   bottom: 400,
                   child: MapNavButton(
-                    Icons.shopping_bag,
-                    "Single Item Shipment",
-                  ),
+                      Icons.local_shipping, "Single Item Shipment", () {}),
                 ),
                 Positioned(
                   right: 0,
                   bottom: 320,
-                  child: MapNavButton(
-                    Icons.local_shipping,
-                    "Multi Item Shipment",
-                  ),
+                  child: MapNavButton(Icons.shopping_bag, "Multi Item Shipment",
+                      () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => Furniture(),
+                        ));
+                  }),
                 ),
                 DropdownButtonHideUnderline(
                   child: Align(
                     alignment: Alignment.bottomRight,
                     child: Container(
-                      height: 100,
+                      height: 200,
                       padding: EdgeInsets.only(
                         left: 20,
                       ),
