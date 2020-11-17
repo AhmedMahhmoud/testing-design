@@ -21,8 +21,14 @@ class _LocationPickerState extends State<LocationPicker> {
   Future _future;
   @override
   void initState() {
-    _future = getCurrentPos();
     super.initState();
+    _future = getCurrentPos();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _controller.dispose();
   }
 
   @override
@@ -78,6 +84,7 @@ class _LocationPickerState extends State<LocationPicker> {
                       onTap: (latLng) {
                         setState(() {
                           location = latLng;
+                          print(location);
                         });
                       },
                       minMaxZoomPreference: MinMaxZoomPreference(16, 30),

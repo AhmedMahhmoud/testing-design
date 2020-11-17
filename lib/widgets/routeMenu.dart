@@ -6,21 +6,12 @@ class RouteMenu extends StatelessWidget {
   RouteMenu(this.text);
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => LocationPicker(),
-            ));
-      },
-      child: Container(
-          child: Center(
-        child: (Text(
-          text,
-          style: TextStyle(fontWeight: FontWeight.w600),
-        )),
+    return Container(
+        child: Center(
+      child: (Text(
+        text,
+        style: TextStyle(fontWeight: FontWeight.w600),
       )),
-    );
+    ));
   }
 }

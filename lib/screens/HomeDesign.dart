@@ -12,21 +12,15 @@ class HomesDesign extends StatefulWidget {
 }
 
 List<Map> myMap = [
-  {
-    "image":
-        "https://i.pinimg.com/564x/71/e6/a9/71e6a94a9351c0a28a2c07a36e7cf04c.jpg",
-    "name": "Truck"
-  },
-  {
-    "image":
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcRYoy4nMLwfQ42zsV1LXmWYSgdLuJiaLM_SUQ&usqp=CAU",
-    "name": "Motorcycle"
-  },
-  {
-    "image":
-        "https://i.pinimg.com/564x/71/e6/a9/71e6a94a9351c0a28a2c07a36e7cf04c.jpg",
-    "name": "Truck"
-  }
+  {"image": "lib/assets/images/1.5 ton.png", "name": "1.5 ton"},
+  {"image": "lib/assets/images/1.5ton closed.png", "name": "1.5 ton closed"},
+  {"image": "lib/assets/images/Bicycle.png", "name": "Bicycle"},
+  {"image": "lib/assets/images/bolan.png", "name": "Bolan"},
+  {"image": "lib/assets/images/jumbo closed.png", "name": "Jumbo Closed"},
+  {"image": "lib/assets/images/Motorcycle.png", "name": "Motorcycle"},
+  {"image": "lib/assets/images/ravi.png", "name": "Ravi"},
+  {"image": "lib/assets/images/tricycle.png", "name": "Tricycle"},
+  {"image": "lib/assets/images/winch.png", "name": "Winch"}
 ];
 
 class _HomesDesignState extends State<HomesDesign> {
@@ -51,6 +45,22 @@ class _HomesDesignState extends State<HomesDesign> {
     _controller.dispose();
     // TODO: implement dispose
     super.dispose();
+  }
+
+  var textSatelite = "Change To Satelite Map";
+  var showSatalite = false;
+  void toggleSatelite() {
+    if (showSatalite == false)
+      setState(() {
+        showSatalite = true;
+        textSatelite = "Change To Normal Map";
+      });
+    else {
+      setState(() {
+        showSatalite = false;
+        textSatelite = "Change To Satelite Map";
+      });
+    }
   }
 
   @override
@@ -80,8 +90,10 @@ class _HomesDesignState extends State<HomesDesign> {
                         target: LatLng(currentLocation.latitude,
                             currentLocation.longitude),
                         zoom: 15),
-                    mapType: MapType.normal,
-                    compassEnabled: true,
+                    mapType: showSatalite ? MapType.satellite : MapType.normal,
+                    compassEnabled: false,
+                    myLocationButtonEnabled: true,
+                    padding: EdgeInsets.only(top: 450),
                     trafficEnabled: true,
                     myLocationEnabled: true,
                   ),
@@ -90,7 +102,8 @@ class _HomesDesignState extends State<HomesDesign> {
                     right: 12,
                     child: SearchMapPlaceWidget(
                       hasClearButton: true,
-                      location: LatLng(currentLocation.latitude,currentLocation.longitude),
+                      location: LatLng(
+                          currentLocation.latitude, currentLocation.longitude),
                       radius: 30000,
                       placeType: PlaceType.address,
                       placeholder: "Search by location",
@@ -130,50 +143,66 @@ class _HomesDesignState extends State<HomesDesign> {
                           ));
                     }),
                   ),
-                  DropdownButtonHideUnderline(
-                    child: Align(
-                      alignment: Alignment.bottomRight,
-                      child: Container(
-                        height: 200,
-                        padding: EdgeInsets.only(
-                          left: 20,
-                        ),
-                        child: DropdownButton<String>(
-                            hint: Text("Vechile"),
-                            isDense: true,
-                            elevation: 2,
-                            isExpanded: true,
-                            onChanged: (value) {},
-                            items: myMap.map((Map e) {
-                              return new DropdownMenuItem<String>(
-                                  child: Card(
-                                elevation: 10,
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(15.0)),
-                                child: Row(
-                                  children: [
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(45),
-                                      child: Image(
-                                        image: NetworkImage(e["image"]),
-                                        width: 65,
-                                        height: 50,
+                  Positioned(
+                    right: 0,
+                    bottom: 250,
+                    child: MapNavButton(Icons.scatter_plot, textSatelite, () {
+                      toggleSatelite();
+                    }),
+                  ),
+                  Align(
+                    alignment: Alignment.bottomRight,
+                    child: Container(
+                        decoration: BoxDecoration(
+                            border: Border.all(color: Colors.black, width: 1),
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(16),
+                              topRight: Radius.circular(16),
+                            ),
+                            color: Colors.white.withOpacity(0.9)),
+                        height: 100,
+                        padding: EdgeInsets.only(left: 20, bottom: 20),
+                        child: ListView.builder(
+                          itemCount: myMap.length,
+                          scrollDirection: Axis.horizontal,
+                          itemBuilder: (context, index) {
+                            return Container(
+                              padding: EdgeInsets.all(5),
+                              decoration: BoxDecoration(),
+                              child: Column(
+                                children: [
+                                  Stack(
+                                    children: [
+                                      Container(
+                                        padding: EdgeInsets.all(23),
+                                        decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Colors.blue[800]),
                                       ),
-                                    ),
-                                    Container(
-                                      margin: EdgeInsets.only(left: 10),
-                                      child: Text(
-                                        e["name"],
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold),
+                                      Positioned(
+                                        child: ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(15),
+                                          child: Image(
+                                            image: AssetImage(
+                                                myMap[index]["image"]),
+                                            width: 55,
+                                            height: 50,
+                                          ),
+                                        ),
                                       ),
-                                    )
-                                  ],
-                                ),
-                              ));
-                            }).toList()),
-                      ),
-                    ),
+                                    ],
+                                  ),
+                                  Expanded(
+                                      child: Text(myMap[index]["name"],
+                                          style: TextStyle(
+                                              color: Colors.black,
+                                              fontStyle: FontStyle.italic)))
+                                ],
+                              ),
+                            );
+                          },
+                        )),
                   )
                 ],
               ),

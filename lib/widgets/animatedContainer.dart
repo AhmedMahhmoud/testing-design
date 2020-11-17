@@ -18,25 +18,24 @@ class _MapNavButtonState extends State<MapNavButton> {
       child: Container(
         padding: EdgeInsets.only(left: 16),
         child: !_folded
-            ? Expanded(
-                child: InkWell(
-                  onTap: widget.onTap,
-                  child: Text(
-                    widget.label,
-                    style: TextStyle(color: Colors.white, fontSize: 15),
-                  ),
-                ),
+            ? InkWell(
+                onTap: widget.onTap,
+                child: Text(widget.label,
+                    style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold)),
               )
             : null,
       ),
     );
     return AnimatedContainer(
       duration: Duration(milliseconds: 200),
-      width: _folded ? 56 : 200,
-      height: 56,
+      width: _folded ? 56 : 190,
+      height: 46,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(25),
-        color: Colors.black.withOpacity(1),
+        color: Colors.white,
         boxShadow: kElevationToShadow[3],
       ),
       child: Row(
@@ -56,7 +55,7 @@ class _MapNavButtonState extends State<MapNavButton> {
                   padding: const EdgeInsets.all(16.0),
                   child: Icon(
                     _folded ? widget.iconData : Icons.close,
-                    color: Colors.yellow[800],
+                    color: Colors.blue[900],
                   ),
                 ),
                 onTap: () {

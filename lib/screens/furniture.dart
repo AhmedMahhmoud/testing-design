@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:geocoder/geocoder.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:group_radio_button/group_radio_button.dart';
+import 'package:hovo_design/screens/ConfirmOrderScreen.dart';
 import 'package:hovo_design/widgets/RowCalculations.dart';
 import 'package:hovo_design/widgets/locatinPicker.dart';
 import 'package:hovo_design/widgets/routeMenu.dart';
+import 'package:get/get.dart';
 
 class Furniture extends StatefulWidget {
   @override
@@ -21,7 +24,6 @@ int initialValCarbenter = 0;
 int initialValElecterian = 0;
 int initialValCartonPackage = 0;
 int initialValFlatPackage = 0;
-int totalCost = 0;
 
 class _FurnitureState extends State<Furniture> {
   void curbbenterFunction(
@@ -96,6 +98,18 @@ class _FurnitureState extends State<Furniture> {
     }
   }
 
+  var addressLoc = "Pick From Location";
+
+  Future<String> getloc(Coordinates coordinates) async {
+    var adr = await Geocoder.local.findAddressesFromCoordinates(coordinates);
+    var address = adr.first;
+    return address.locality +
+        " " +
+        address.adminArea +
+        " " +
+        address.subAdminArea;
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -106,14 +120,14 @@ class _FurnitureState extends State<Furniture> {
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(25),
-              color: Colors.red[800],
+              color: Colors.blue[800],
             ),
             padding: EdgeInsets.all(15),
             child: Row(
               children: [
                 Padding(
                   padding: const EdgeInsets.only(left: 10),
-                  child: Text("Estimated Price :",
+                  child: Text("Estimated Cost :",
                       style: TextStyle(
                           color: Colors.white, fontWeight: FontWeight.w600)),
                 ),
@@ -131,24 +145,122 @@ class _FurnitureState extends State<Furniture> {
                 ),
                 Spacer(),
                 GestureDetector(
-                  onTap: () {
-                    print("d");
-                  },
-                  child: Container(
+                    onTap: () {
+                      if (initialValCarbenter +
+                              initialValCartonPackage +
+                              initialValElecterian +
+                              initialValFlatPackage !=
+                          0) {
+                        Dialog errorDialog = Dialog(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                  12.0)), //this right here
+                          child: Container(
+                            width: 300,
+                            height: 300,
+                            child: Column(
+                              children: <Widget>[
+                                Center(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16.0),
+                                    child: Text(
+                                      'Are you sure you want to confirm your order ?',
+                                      style: TextStyle(
+                                          fontSize: 17,
+                                          color: Colors.green,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                ),
+                                InkWell(
+                                  onTap: () {},
+                                  child: Container(
+                                    padding: EdgeInsets.only(top: 30),
+                                    child: Column(
+                                      children: [
+                                        InkWell(
+                                          onTap: () {
+                                            Get.to(ConfirmScreen());
+                                          },
+                                          child: Text(
+                                            'Yes',
+                                            style: TextStyle(
+                                                fontSize: 20,
+                                                color: Colors.green),
+                                          ),
+                                        ),
+                                        FlatButton(
+                                            onPressed: () =>
+                                                Navigator.pop(context),
+                                            child: Text(
+                                              'No',
+                                              style: TextStyle(
+                                                  color: Colors.red,
+                                                  fontSize: 20),
+                                            )),
+                                        SizedBox(
+                                          height: 40,
+                                        ),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              "Total cost is : ",
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.w600,
+                                                  color: Colors.green,
+                                                  fontSize: 17),
+                                            ),
+                                            Text(
+                                              ((initialValCarbenter +
+                                                          initialValCartonPackage +
+                                                          initialValElecterian +
+                                                          initialValFlatPackage)
+                                                      .toString() +
+                                                  " EGP"),
+                                              style: TextStyle(
+                                                  color: Colors.green,
+                                                  fontWeight: FontWeight.w600,
+                                                  fontSize: 17),
+                                            )
+                                          ],
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context) => errorDialog);
+                      } else {
+                        return Get.snackbar("Cant Confirm Your Order",
+                            "Please Complete Your Order First",
+                            colorText: Colors.black,
+                            snackStyle: SnackStyle.FLOATING,
+                            snackPosition: SnackPosition.BOTTOM,
+                            backgroundColor: Colors.white);
+                      }
+                    },
+                    child: Container(
                       child: Text(
-                    "Confirm ",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  )),
-                )
+                        "Confirm ",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    )),
               ],
             ),
           ),
         ),
         appBar: AppBar(
-          backgroundColor: Colors.red[800],
+          backgroundColor: Colors.blue[800],
           title: Text("Filling Form"),
         ),
         body: Container(
@@ -158,28 +270,84 @@ class _FurnitureState extends State<Furniture> {
             children: [
               GestureDetector(
                 onTap: () async {
-                  final result = await Navigator.push(
+                  var result = await Navigator.push(
                       context,
                       MaterialPageRoute(
                           builder: (context) => LocationPicker()));
                   if (result != null) {
-                    print("z7z");
                     setState(() {
                       senderPos = Position(
                           longitude: result.longitude,
                           latitude: result.latitude);
                     });
-                    print(senderPos);
                   }
                 },
-                child: CardDet(
-                  "From : ",
-                  RouteMenu(senderPos == null
-                      ? "Pick From Location"
-                      : senderPos.toString()),
-                ),
+                child: senderPos == null
+                    ? CardDet(
+                        RouteMenu("Pick From Location"),
+                      )
+                    : FutureBuilder(
+                        future: getloc(new Coordinates(
+                            senderPos.latitude, senderPos.longitude)),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                                  ConnectionState.waiting &&
+                              (initialValCarbenter +
+                                      initialValCartonPackage +
+                                      initialValElecterian +
+                                      initialValFlatPackage ==
+                                  0)) {
+                            return Center(
+                              child: CircularProgressIndicator(
+                                backgroundColor: Colors.blue[800],
+                              ),
+                            );
+                          }
+                          if (snapshot.hasData)
+                            return CardDet(RouteMenu(snapshot.data));
+                          return Text("Pick From Location");
+                        },
+                      ),
               ),
-              CardDet("To : ", RouteMenu("Pick To Location")),
+              GestureDetector(
+                onTap: () async {
+                  var result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => LocationPicker()));
+                  if (result != null) {
+                    setState(() {
+                      receiverPos = Position(
+                          longitude: result.longitude,
+                          latitude: result.latitude);
+                    });
+                  }
+                },
+                child: receiverPos == null
+                    ? CardDet(RouteMenu("Pick To Location"))
+                    : FutureBuilder(
+                        future: getloc(new Coordinates(
+                            receiverPos.latitude, receiverPos.longitude)),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                                  ConnectionState.waiting &&
+                              (initialValCarbenter +
+                                      initialValCartonPackage +
+                                      initialValElecterian +
+                                      initialValFlatPackage ==
+                                  0)) {
+                            return Center(
+                              child: CircularProgressIndicator(
+                                backgroundColor: Colors.blue[800],
+                              ),
+                            );
+                          }
+                          if (snapshot.hasData)
+                            return CardDet(RouteMenu(snapshot.data));
+                          return Text("Pick To Location");
+                        },
+                      ),
+              ),
               SizedBox(
                 height: 10,
               ),
@@ -229,9 +397,8 @@ class _FurnitureState extends State<Furniture> {
 }
 
 class CardDet extends StatelessWidget {
-  final String text;
   final Widget widget;
-  CardDet(this.text, this.widget);
+  CardDet(this.widget);
 
   @override
   Widget build(BuildContext context) {
