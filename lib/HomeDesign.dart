@@ -37,12 +37,7 @@ class _HomesDesignState extends State<HomesDesign> {
     currentLocation = await _location.getLocation();
   }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    // TODO: implement dispose
-    super.dispose();
-  }
+  
 
   @override
   Widget build(BuildContext context) {
@@ -73,11 +68,11 @@ class _HomesDesignState extends State<HomesDesign> {
                   right: 12,
                   child: SearchMapPlaceWidget(
                     strictBounds: true,
-                    apiKey: "AIzaSyCyt_eysLh70lE25053JEzJaTYsvrQGfRE ",
+                    apiKey: "AIzaSyCyt_eysLh70lE25053JEzJaTYsvrQGfRE",
                     language: "eg",
                     onSelected: (Place place) async {
                       final geolocation = await place.geolocation;
-
+                    
                       // Will animate the GoogleMap camera, taking us to the selected position with an appropriate zoom
 
                       _controller.animateCamera(
@@ -128,9 +123,9 @@ class _HomesDesignState extends State<HomesDesign> {
                                   ClipRRect(
                                     borderRadius: BorderRadius.circular(45),
                                     child: Image(
-                                      fit: BoxFit.fitWidth,
                                       image: NetworkImage(e["image"]),
                                       width: 65,
+                                      height: 50,
                                     ),
                                   ),
                                   Container(
