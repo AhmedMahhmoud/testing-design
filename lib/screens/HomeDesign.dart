@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:get/get.dart';
+
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:hovo_design/screens/furniture.dart';
 import 'package:hovo_design/widgets/animatedContainer.dart';
@@ -23,9 +26,14 @@ List<Map> myMap = [
   {"image": "lib/assets/images/winch.png", "name": "Winch"}
 ];
 
-class _HomesDesignState extends State<HomesDesign> {
+class _HomesDesignState extends State<HomesDesign>
+    with TickerProviderStateMixin {
   LatLng _initialcameraposition = LatLng(20.5937, 78.9629);
   GoogleMapController _controller;
+  AnimationController _animationController;
+  AnimationController _animationControllerMap;
+  Animation<double> _animationMoveUp;
+  Animation<double> _animationMoveUpMap;
   Location _location = Location();
   LocationData currentLocation;
   Future getCurrentPos() async {
@@ -36,6 +44,15 @@ class _HomesDesignState extends State<HomesDesign> {
   @override
   void initState() {
     _future = getCurrentPos();
+    _animationController =
+        AnimationController(vsync: this, duration: Duration(seconds: 4));
+    _animationControllerMap =
+        AnimationController(vsync: this, duration: Duration(seconds: 4));
+    _animationMoveUp = CurvedAnimation(
+        curve: Interval(0.25, 0.90), parent: _animationController);
+    _animationMoveUpMap = CurvedAnimation(
+        curve: Interval(0.25, 0.90), parent: _animationControllerMap);
+
     // TODO: implement initState
     super.initState();
   }
@@ -43,6 +60,8 @@ class _HomesDesignState extends State<HomesDesign> {
   @override
   void dispose() {
     _controller.dispose();
+    _animationControllerMap.dispose();
+    _animationController.dispose();
     // TODO: implement dispose
     super.dispose();
   }
@@ -63,149 +82,269 @@ class _HomesDesignState extends State<HomesDesign> {
     }
   }
 
+  var showPickUploc = false;
+  var showVechi = false;
+  int curentIndex = 0;
+  void updateIndex(int n) {
+    setState(() {
+      curentIndex = n;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
         resizeToAvoidBottomInset: false,
-        body: FutureBuilder(
-          future: _future,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
-            }
-            return Container(
-              height: MediaQuery.of(context).size.height,
-              width: MediaQuery.of(context).size.width,
-              child: Stack(
-                children: [
-                  GoogleMap(
-                    onMapCreated: (GoogleMapController c) {
-                      setState(() {
-                        _controller = c;
-                      });
-                    },
-                    initialCameraPosition: CameraPosition(
-                        target: LatLng(currentLocation.latitude,
-                            currentLocation.longitude),
-                        zoom: 15),
-                    mapType: showSatalite ? MapType.satellite : MapType.normal,
-                    compassEnabled: false,
-                    myLocationButtonEnabled: true,
-                    padding: EdgeInsets.only(top: 450),
-                    trafficEnabled: true,
-                    myLocationEnabled: true,
-                  ),
-                  Positioned(
-                    top: 40,
-                    right: 12,
-                    child: SearchMapPlaceWidget(
-                      hasClearButton: true,
-                      location: LatLng(
-                          currentLocation.latitude, currentLocation.longitude),
-                      radius: 30000,
-                      placeType: PlaceType.address,
-                      placeholder: "Search by location",
-                      strictBounds: true,
-                      apiKey: "AIzaSyCyt_eysLh70lE25053JEzJaTYsvrQGfRE",
-                      language: "eg",
-                      onSelected: (Place place) async {
-                        final geolocation = await place.geolocation;
-
-                        print(geolocation.coordinates);
-                        // Will animate the GoogleMap camera, taking us to the selected position with an appropriate zoom
-                        setState(() {
-                          _controller.animateCamera(
-                              CameraUpdate.newLatLng(geolocation.coordinates));
-                          _controller.animateCamera(
-                              CameraUpdate.newLatLngBounds(
-                                  geolocation.bounds, 0));
-                        });
-                      },
-                    ),
-                  ),
-                  Positioned(
-                    right: 0,
-                    bottom: 400,
-                    child: MapNavButton(
-                        Icons.local_shipping, "Single Item Shipment", () {}),
-                  ),
-                  Positioned(
-                    right: 0,
-                    bottom: 320,
-                    child: MapNavButton(
-                        Icons.shopping_bag, "Multi Item Shipment", () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => Furniture(),
-                          ));
-                    }),
-                  ),
-                  Positioned(
-                    right: 0,
-                    bottom: 250,
-                    child: MapNavButton(Icons.scatter_plot, textSatelite, () {
-                      toggleSatelite();
-                    }),
-                  ),
-                  Align(
-                    alignment: Alignment.bottomRight,
-                    child: Container(
-                        decoration: BoxDecoration(
-                            border: Border.all(color: Colors.black, width: 1),
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(16),
-                              topRight: Radius.circular(16),
-                            ),
-                            color: Colors.white.withOpacity(0.9)),
-                        height: 100,
-                        padding: EdgeInsets.only(left: 20, bottom: 20),
-                        child: ListView.builder(
-                          itemCount: myMap.length,
-                          scrollDirection: Axis.horizontal,
-                          itemBuilder: (context, index) {
-                            return Container(
-                              padding: EdgeInsets.all(5),
-                              decoration: BoxDecoration(),
-                              child: Column(
-                                children: [
-                                  Stack(
-                                    children: [
-                                      Container(
-                                        padding: EdgeInsets.all(23),
-                                        decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: Colors.blue[800]),
-                                      ),
-                                      Positioned(
-                                        child: ClipRRect(
-                                          borderRadius:
-                                              BorderRadius.circular(15),
-                                          child: Image(
-                                            image: AssetImage(
-                                                myMap[index]["image"]),
-                                            width: 55,
-                                            height: 50,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  Expanded(
-                                      child: Text(myMap[index]["name"],
-                                          style: TextStyle(
-                                              color: Colors.black,
-                                              fontStyle: FontStyle.italic)))
-                                ],
-                              ),
-                            );
+        body: AnimatedBuilder(
+          animation: _animationController,
+          builder: (context, _) {
+            return FutureBuilder(
+              future: _future,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                }
+                return Container(
+                  height: MediaQuery.of(context).size.height,
+                  width: MediaQuery.of(context).size.width,
+                  child: Stack(
+                    children: [
+                      Opacity(
+                        opacity: _animationMoveUpMap.value,
+                        child: GoogleMap(
+                          onMapCreated: (GoogleMapController c) {
+                            setState(() {
+                              _controller = c;
+                            });
                           },
-                        )),
-                  )
-                ],
-              ),
+                          initialCameraPosition: CameraPosition(
+                              target: LatLng(currentLocation.latitude,
+                                  currentLocation.longitude),
+                              zoom: 15),
+                          mapType:
+                              showSatalite ? MapType.satellite : MapType.normal,
+                          compassEnabled: false,
+                          myLocationButtonEnabled: true,
+                          padding: EdgeInsets.only(top: 520),
+                          trafficEnabled: true,
+                          myLocationEnabled: true,
+                        ),
+                      ),
+                      Positioned(
+                        top: 20,
+                        right: 0,
+                        child: Container(
+                          width: Get.width,
+                          child: Card(
+                            elevation: 15,
+                            child: SearchMapPlaceWidget(
+                              icon: Icons.car_rental,
+                              hasClearButton: true,
+                              clearIcon: Icons.clear,
+                              location: LatLng(currentLocation.latitude,
+                                  currentLocation.longitude),
+                              radius: 30000,
+                              placeType: PlaceType.address,
+                              placeholder: "Where to",
+                              strictBounds: true,
+                              apiKey: "AIzaSyCyt_eysLh70lE25053JEzJaTYsvrQGfRE",
+                              language: "eg",
+                              onSelected: (Place place) async {
+                                final geolocation = await place.geolocation;
+
+                                print(geolocation.coordinates);
+                                _animationControllerMap.forward();
+                                // Will animate the GoogleMap camera, taking us to the selected position with an appropriate zoom
+                                setState(() {
+                                  showPickUploc = true;
+                                  _controller.animateCamera(
+                                      CameraUpdate.newLatLng(
+                                          geolocation.coordinates));
+                                  _controller.animateCamera(
+                                      CameraUpdate.newLatLngBounds(
+                                          geolocation.bounds, 0));
+                                });
+                              },
+                            ),
+                          ),
+                        ),
+                      ),
+                      showPickUploc
+                          ? Positioned(
+                              top: 80,
+                              right: 0,
+                              child: Container(
+                                width: Get.width,
+                                child: Card(
+                                  elevation: 15,
+                                  child: SearchMapPlaceWidget(
+                                    icon: Icons.location_on,
+                                    hasClearButton: true,
+                                    clearIcon: Icons.clear,
+                                    location: LatLng(currentLocation.latitude,
+                                        currentLocation.longitude),
+                                    radius: 30000,
+                                    placeType: PlaceType.address,
+                                    placeholder: "Pick up location",
+                                    strictBounds: true,
+                                    apiKey:
+                                        "AIzaSyCyt_eysLh70lE25053JEzJaTYsvrQGfRE",
+                                    language: "eg",
+                                    onSelected: (Place place) async {
+                                      final geolocation =
+                                          await place.geolocation;
+
+                                      print(geolocation.coordinates);
+                                      _animationController.forward();
+                                      // Will animate the GoogleMap camera, taking us to the selected position with an appropriate zoom
+                                      setState(() {
+                                        showVechi = true;
+                                        _controller.animateCamera(
+                                            CameraUpdate.newLatLng(
+                                                geolocation.coordinates));
+                                        _controller.animateCamera(
+                                            CameraUpdate.newLatLngBounds(
+                                                geolocation.bounds, 0));
+                                      });
+                                    },
+                                  ),
+                                ),
+                              ),
+                            )
+                          : Container(),
+                      showVechi
+                          ? Positioned(
+                              right: 0,
+                              bottom: 400,
+                              child: Opacity(
+                                opacity: _animationMoveUp.value,
+                                child: MapNavButton(Icons.local_shipping,
+                                    "Single Item Shipment", () {}),
+                              ),
+                            )
+                          : Container(),
+                      showVechi
+                          ? Positioned(
+                              right: 0,
+                              bottom: 320,
+                              child: Opacity(
+                                opacity: _animationMoveUp.value,
+                                child: MapNavButton(
+                                    Icons.shopping_bag, "Multi Item Shipment",
+                                    () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => Furniture(),
+                                      ));
+                                }),
+                              ),
+                            )
+                          : Container(),
+                      showVechi
+                          ? Positioned(
+                              right: 0,
+                              bottom: 250,
+                              child: Opacity(
+                                opacity: _animationMoveUp.value,
+                                child: MapNavButton(
+                                    Icons.scatter_plot, textSatelite, () {
+                                  toggleSatelite();
+                                }),
+                              ),
+                            )
+                          : Container(),
+                      showVechi
+                          ? Align(
+                              alignment: Alignment.bottomRight,
+                              child: Opacity(
+                                opacity: _animationMoveUp.value,
+                                child: Container(
+                                    decoration: BoxDecoration(
+                                        border: Border.all(
+                                            color: Colors.black, width: 1),
+                                        borderRadius: BorderRadius.only(
+                                          topLeft: Radius.circular(16),
+                                          topRight: Radius.circular(16),
+                                        ),
+                                        color: Colors.white.withOpacity(0.9)),
+                                    height: 120,
+                                    padding: EdgeInsets.only(top: 10, left: 10),
+                                    child: ListView.builder(
+                                      itemCount: myMap.length,
+                                      scrollDirection: Axis.horizontal,
+                                      itemBuilder: (context, index) {
+                                        return Container(
+                                          margin: EdgeInsets.only(right: 16),
+                                          padding: EdgeInsets.only(
+                                              top: 10, right: 1),
+                                          decoration: BoxDecoration(),
+                                          child: InkWell(
+                                            onTap: () {
+                                              updateIndex(index);
+                                            },
+                                            child: Column(
+                                              children: [
+                                                Stack(
+                                                  children: [
+                                                    Container(
+                                                      padding:
+                                                          EdgeInsets.all(23),
+                                                      decoration: BoxDecoration(
+                                                          shape:
+                                                              BoxShape.circle,
+                                                          color:
+                                                              Colors.blue[800]),
+                                                    ),
+                                                    Positioned(
+                                                      child: ClipRRect(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(15),
+                                                        child: Image(
+                                                          image: AssetImage(
+                                                              myMap[index]
+                                                                  ["image"]),
+                                                          width: 55,
+                                                          height: 50,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                Text(myMap[index]["name"],
+                                                    style: TextStyle(
+                                                        color:
+                                                            index == curentIndex
+                                                                ? Colors.blue
+                                                                : Colors.black,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        fontStyle:
+                                                            FontStyle.italic)),
+                                                Text("Price",
+                                                    style: TextStyle(
+                                                        color:
+                                                            index == curentIndex
+                                                                ? Colors.blue
+                                                                : Colors.black,
+                                                        fontWeight:
+                                                            FontWeight.w600)),
+                                              ],
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    )),
+                              ),
+                            )
+                          : Container()
+                    ],
+                  ),
+                );
+              },
             );
           },
         ),

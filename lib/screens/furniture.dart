@@ -111,6 +111,17 @@ class _FurnitureState extends State<Furniture> {
   }
 
   @override
+  void initState() {
+    // TODO: implement initState
+    if (senderPos != null) {
+      print("sender not null");
+    } else {
+      print("sender null");
+    }
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
@@ -305,7 +316,7 @@ class _FurnitureState extends State<Furniture> {
                           }
                           if (snapshot.hasData)
                             return CardDet(RouteMenu(snapshot.data));
-                          return Text("Pick From Location");
+                          return CardDet(RouteMenu("Pick From Location"));
                         },
                       ),
               ),

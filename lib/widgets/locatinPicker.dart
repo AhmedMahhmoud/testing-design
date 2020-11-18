@@ -109,6 +109,7 @@ class _LocationPickerState extends State<LocationPicker> {
                         print(geolocation.coordinates);
                         // Will animate the GoogleMap camera, taking us to the selected position with an appropriate zoom
                         setState(() {
+                          location = geolocation.coordinates;
                           _controller.animateCamera(
                               CameraUpdate.newLatLng(geolocation.coordinates));
                           _controller.animateCamera(
