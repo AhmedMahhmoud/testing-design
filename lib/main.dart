@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
-import 'package:hovo_design/screens/HomeDesign.dart';
-import 'package:hovo_design/screens/furniture.dart';
+import 'package:hovo_design/screens/DesignScreen3.dart';
+import 'package:hovo_design/screens/designScreen.dart';
 
 void main() {
   runApp(MyApp());
@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: HomesDesign(),
+      home: DesignScreen3(),
     );
   }
 }

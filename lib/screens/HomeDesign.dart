@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:geocoder/geocoder.dart';
+
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 
@@ -52,8 +53,8 @@ class _HomesDesignState extends State<HomesDesign>
         curve: Interval(0.25, 0.90), parent: _animationController);
     _animationMoveUpMap = CurvedAnimation(
         curve: Interval(0.25, 0.90), parent: _animationControllerMap);
-
     // TODO: implement initState
+
     super.initState();
   }
 
@@ -91,11 +92,16 @@ class _HomesDesignState extends State<HomesDesign>
     });
   }
 
+  var searchBar = true;
+
+  String wheretoADRESS = "Where to ?";
+  var showCurrentLoc = true;
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
+        resizeToAvoidBottomPadding: false,
         resizeToAvoidBottomInset: false,
         body: AnimatedBuilder(
           animation: _animationController,
@@ -112,13 +118,17 @@ class _HomesDesignState extends State<HomesDesign>
                   child: Stack(
                     children: [
                       Opacity(
-                        opacity: _animationMoveUpMap.value,
+                        opacity: showVechi ? _animationController.value : 0.411,
                         child: GoogleMap(
                           onMapCreated: (GoogleMapController c) {
                             setState(() {
                               _controller = c;
                             });
                           },
+                          // onCameraMove: (position) {
+                          //   print(position.target);
+                          // },
+
                           initialCameraPosition: CameraPosition(
                               target: LatLng(currentLocation.latitude,
                                   currentLocation.longitude),
@@ -133,47 +143,104 @@ class _HomesDesignState extends State<HomesDesign>
                         ),
                       ),
                       Positioned(
-                        top: 20,
+                        top: showCurrentLoc ? 80 : 20,
                         right: 0,
                         child: Container(
                           width: Get.width,
                           child: Card(
                             elevation: 15,
-                            child: SearchMapPlaceWidget(
-                              icon: Icons.car_rental,
-                              hasClearButton: true,
-                              clearIcon: Icons.clear,
-                              location: LatLng(currentLocation.latitude,
-                                  currentLocation.longitude),
-                              radius: 30000,
-                              placeType: PlaceType.address,
-                              placeholder: "Where to",
-                              strictBounds: true,
-                              apiKey: "AIzaSyCyt_eysLh70lE25053JEzJaTYsvrQGfRE",
-                              language: "eg",
-                              onSelected: (Place place) async {
-                                final geolocation = await place.geolocation;
+                            child: searchBar
+                                ? SearchMapPlaceWidget(
+                                    icon: Icons.car_rental,
+                                    hasClearButton: true,
+                                    clearIcon: Icons.clear,
+                                    location: LatLng(currentLocation.latitude,
+                                        currentLocation.longitude),
+                                    radius: 30000,
+                                    placeType: PlaceType.address,
+                                    placeholder: wheretoADRESS,
+                                    strictBounds: true,
+                                    apiKey:
+                                        "AIzaSyCyt_eysLh70lE25053JEzJaTYsvrQGfRE",
+                                    language: "eg",
+                                    onSelected: (Place place) async {
+                                      final geolocation =
+                                          await place.geolocation;
 
-                                print(geolocation.coordinates);
-                                _animationControllerMap.forward();
-                                // Will animate the GoogleMap camera, taking us to the selected position with an appropriate zoom
-                                setState(() {
-                                  showPickUploc = true;
-                                  _controller.animateCamera(
-                                      CameraUpdate.newLatLng(
-                                          geolocation.coordinates));
-                                  _controller.animateCamera(
-                                      CameraUpdate.newLatLngBounds(
-                                          geolocation.bounds, 0));
-                                });
-                              },
-                            ),
+                                      // Will animate the GoogleMap camera, taking us to the selected position with an appropriate zoom
+                                      setState(() {
+                                        showPickUploc = true;
+                                        showCurrentLoc = false;
+                                        _controller.animateCamera(
+                                            CameraUpdate.newLatLng(
+                                                geolocation.coordinates));
+                                        _controller.animateCamera(
+                                            CameraUpdate.newLatLngBounds(
+                                                geolocation.bounds, 0));
+                                      });
+                                    },
+                                  )
+                                : Container(
+                                    padding: EdgeInsets.all(15),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceAround,
+                                      children: [
+                                        Text(wheretoADRESS),
+                                        Icon(
+                                          Icons.car_rental,
+                                          color: Colors.blue[800],
+                                        )
+                                      ],
+                                    )),
                           ),
+                        ),
+                      ),
+                      Positioned(
+                        top: 20,
+                        child: InkWell(
+                          onTap: () async {
+                            var address = await Geocoder.local
+                                .findAddressesFromCoordinates(new Coordinates(
+                                    currentLocation.latitude,
+                                    currentLocation.longitude));
+                            var displayaddress = address.first;
+                            setState(() {
+                              searchBar = false;
+                              showCurrentLoc = false;
+                              wheretoADRESS = displayaddress.locality +
+                                  " " +
+                                  displayaddress.adminArea +
+                                  " " +
+                                  displayaddress.subAdminArea;
+                            });
+                            showPickUploc = true;
+                            _controller.animateCamera(CameraUpdate.newLatLng(
+                                LatLng(currentLocation.latitude,
+                                    currentLocation.longitude)));
+                          },
+                          child: showCurrentLoc
+                              ? Card(
+                                  child: Container(
+                                    width: Get.width,
+                                    padding: EdgeInsets.all(10),
+                                    child: Center(
+                                      child: Column(
+                                        children: [
+                                          Text("From My Current location"),
+                                          Icon(Icons.place_rounded,
+                                              color: Colors.red)
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              : Container(),
                         ),
                       ),
                       showPickUploc
                           ? Positioned(
-                              top: 80,
+                              top: 90,
                               right: 0,
                               child: Container(
                                 width: Get.width,
@@ -197,6 +264,7 @@ class _HomesDesignState extends State<HomesDesign>
                                           await place.geolocation;
 
                                       print(geolocation.coordinates);
+
                                       _animationController.forward();
                                       // Will animate the GoogleMap camera, taking us to the selected position with an appropriate zoom
                                       setState(() {
