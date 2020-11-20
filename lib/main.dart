@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
-import 'package:hovo_design/screens/DesignScreen3.dart';
-import 'package:hovo_design/screens/designScreen.dart';
+import 'package:hovo_design/screens/AccountsSettings.dart';
+import 'package:hovo_design/screens/ReviewScreen.dart';
+import 'package:hovo_design/screens/RideHistory.dart';
+import 'package:hovo_design/screens/showBottomSheet.dart';
 
 void main() {
   runApp(MyApp());
@@ -12,12 +14,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      home: DesignScreen3(),
-    );
+        debugShowCheckedModeBanner: false,
+        title: 'Flutter Demo',
+        theme: ThemeData(
+          fontFamily: "Poppins",
+          visualDensity: VisualDensity.adaptivePlatformDensity,
+        ),
+        home: ShowBottomSheet());
   }
 }

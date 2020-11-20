@@ -1,11 +1,32 @@
-import 'package:flutter/material.dart';
+import 'dart:async';
 
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:pin_code_fields/pin_code_fields.dart';
 import 'designScreen.dart';
 
-class DesignScreen3 extends StatelessWidget {
+class VerficationCodeScreen extends StatefulWidget {
+  @override
+  _VerficationCodeScreenState createState() => _VerficationCodeScreenState();
+}
+
+String currentText;
+TextEditingController controller = new TextEditingController();
+StreamController<ErrorAnimationType> errorController =
+    StreamController<ErrorAnimationType>();
+var isvisible = false;
+
+class _VerficationCodeScreenState extends State<VerficationCodeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: Visibility(
+        visible: isvisible,
+        child: FloatingActionButton(
+          onPressed: () {},
+          child: Icon(Icons.arrow_forward),
+        ),
+      ),
       body: SingleChildScrollView(
         scrollDirection: Axis.vertical,
         child: Column(
@@ -58,24 +79,40 @@ class DesignScreen3 extends StatelessWidget {
                   Card(
                     elevation: 5,
                     child: Container(
-                      margin: EdgeInsets.only(left: 30, right: 5, top: 5),
-                      width: 300,
-                      padding: EdgeInsets.all(6),
-                      child: TextField(
-                        keyboardType: TextInputType.phone,
-                        decoration: InputDecoration(
-                            border: InputBorder.none,
-                            hintText: "5412 5152 5125 5125",
-                            hintStyle: TextStyle(
-                                color: Colors.black,
-                                letterSpacing: 1,
-                                fontSize: 16),
-                            suffixIcon: Container(
-                                decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(30),
-                                    color: Color(0xFF009FFD)),
-                                child: Icon(Icons.arrow_forward,
-                                    size: 20, color: Colors.white))),
+                      padding: EdgeInsets.only(right: 20, left: 20),
+                      child: PinCodeTextField(
+                        autoDisposeControllers: false,
+                        keyboardType: TextInputType.number,
+                        appContext: context,
+                        length: 4,
+                        onSubmitted: (value) {
+                          print("value is $value");
+                        },
+                        pinTheme: PinTheme(inactiveColor: Colors.black),
+                        obscureText: false,
+                        animationType: AnimationType.scale,
+                        animationDuration: Duration(milliseconds: 300),
+                        controller: controller,
+                        cursorColor: Colors.black,
+                        onCompleted: (v) {
+                          print("Completed");
+                          print("value is $v");
+                          setState(() {
+                            isvisible = true;
+                          });
+                        },
+                        onChanged: (value) {
+                          print(value);
+                          setState(() {
+                            currentText = value;
+                          });
+                        },
+                        beforeTextPaste: (text) {
+                          print("Allowing to paste $text");
+                          //if you return true then it will show the paste confirmation dialog. Otherwise if false, then nothing will happen.
+                          //but you can show anything you want here, like your pop up saying wrong paste format or etc
+                          return true;
+                        },
                       ),
                     ),
                   ),
