@@ -13,7 +13,8 @@ class Furniture extends StatefulWidget {
   _FurnitureState createState() => _FurnitureState();
 }
 
-Position senderPos, receiverPos;
+// Position senderPos, receiverPos;
+String senderPos, receiverPos;
 List<String> list = ["1 Room", "2 Rooms", "3 Rooms"];
 String value = list.first;
 int carpenter = 150;
@@ -280,85 +281,38 @@ class _FurnitureState extends State<Furniture> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               GestureDetector(
-                onTap: () async {
-                  var result = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => LocationPicker()));
-                  if (result != null) {
-                    setState(() {
-                      senderPos = Position(
-                          longitude: result.longitude,
-                          latitude: result.latitude);
-                    });
-                  }
-                },
-                child: senderPos == null
-                    ? CardDet(
-                        RouteMenu("Pick From Location"),
-                      )
-                    : FutureBuilder(
-                        future: getloc(new Coordinates(
-                            senderPos.latitude, senderPos.longitude)),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                                  ConnectionState.waiting &&
-                              (initialValCarbenter +
-                                      initialValCartonPackage +
-                                      initialValElecterian +
-                                      initialValFlatPackage ==
-                                  0)) {
-                            return Center(
-                              child: CircularProgressIndicator(
-                                backgroundColor: Colors.blue[800],
-                              ),
-                            );
-                          }
-                          if (snapshot.hasData)
-                            return CardDet(RouteMenu(snapshot.data));
-                          return CardDet(RouteMenu("Pick From Location"));
-                        },
-                      ),
-              ),
+                  onTap: () async {
+                    var result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => LocationPicker(pageCategory: "furniture",)));
+                    if (result != null) {
+                      print(result);
+                      setState(() {
+                        senderPos = result[1];
+                      });
+                    }
+                  },
+                  child: senderPos == null
+                      ? CardDet(
+                          RouteMenu("Pick From Location"),
+                        )
+                      : CardDet(RouteMenu(senderPos))),
               GestureDetector(
-                onTap: () async {
-                  var result = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => LocationPicker()));
-                  if (result != null) {
-                    setState(() {
-                      receiverPos = Position(
-                          longitude: result.longitude,
-                          latitude: result.latitude);
-                    });
-                  }
-                },
-                child: receiverPos == null
-                    ? CardDet(RouteMenu("Pick To Location"))
-                    : FutureBuilder(
-                        future: getloc(new Coordinates(
-                            receiverPos.latitude, receiverPos.longitude)),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                                  ConnectionState.waiting &&
-                              (initialValCarbenter +
-                                      initialValCartonPackage +
-                                      initialValElecterian +
-                                      initialValFlatPackage ==
-                                  0)) {
-                            return Center(
-                              child: CircularProgressIndicator(
-                                backgroundColor: Colors.blue[800],
-                              ),
-                            );
-                          }
-                          if (snapshot.hasData)
-                            return CardDet(RouteMenu(snapshot.data));
-                          return Text("Pick To Location");
-                        },
-                      ),
-              ),
+                  onTap: () async {
+                    var result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => LocationPicker(pageCategory: "furniture",)));
+                    if (result != null) {
+                      setState(() {
+                        receiverPos = result[1];
+                      });
+                    }
+                  },
+                  child: receiverPos == null
+                      ? CardDet(RouteMenu("Pick To Location"))
+                      : CardDet(RouteMenu(receiverPos))),
               SizedBox(
                 height: 10,
               ),

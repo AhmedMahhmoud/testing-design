@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:geocoder/geocoder.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:search_map_place/search_map_place.dart';
 
 class LocationPicker extends StatefulWidget {
+  final String pageCategory;
+  LocationPicker({@required this.pageCategory});
   @override
   _LocationPickerState createState() => _LocationPickerState();
 }
@@ -36,24 +39,45 @@ class _LocationPickerState extends State<LocationPicker> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
+        centerTitle: false,
         backgroundColor: Colors.white,
-        title: Text(
-          "Pick The Location",
-          style: TextStyle(
-              color: Color(0xff3D4665),
-              fontWeight: FontWeight.bold,
-              fontSize: 20),
+        title: Align(
+          alignment: Alignment.topLeft,
+          child: Text(
+            widget.pageCategory == "furniture"
+                ? "Pick The Location"
+                : widget.pageCategory == "home"
+                    ? "Add your home Location"
+                    : "Add your work location",
+            style: TextStyle(
+                color: Color(0xff3D4665),
+                fontWeight: FontWeight.bold,
+                fontSize: 20),
+            textAlign: TextAlign.left,
+          ),
         ),
         actions: [
           InkWell(
-              onTap: () {
-                if (location != null)
-                  Navigator.of(context).pop(location);
-                else
+              onTap: () async {
+                if (location != null) {
+                  List<dynamic> currentPositionList = [];
+                  var address = await Geocoder.local
+                      .findAddressesFromCoordinates(new Coordinates(
+                          location.latitude, location.longitude));
+                  var displayaddress = address.first;
+                  var finalAddress = displayaddress.locality +
+                      " " +
+                      displayaddress.adminArea +
+                      " " +
+                      displayaddress.subAdminArea;
+                  currentPositionList = [location, finalAddress];
+                  print(currentPositionList[1]);
+                  Navigator.of(context).pop(currentPositionList);
+                } else
                   Navigator.of(context).pop();
               },
               child: Padding(
-                padding: const EdgeInsets.all(8.0),
+                padding: const EdgeInsets.only(right: 10),
                 child: Icon(
                   Icons.check,
                   color: Colors.blue,
@@ -84,7 +108,6 @@ class _LocationPickerState extends State<LocationPicker> {
                       onTap: (latLng) {
                         setState(() {
                           location = latLng;
-                          print(location);
                         });
                       },
                       minMaxZoomPreference: MinMaxZoomPreference(16, 30),
@@ -98,15 +121,12 @@ class _LocationPickerState extends State<LocationPicker> {
                       location: LatLng(
                           currentLocation.latitude, currentLocation.longitude),
                       radius: 30000,
-                      placeType: PlaceType.address,
                       placeholder: "Search certain location",
-                      strictBounds: true,
                       apiKey: "AIzaSyCyt_eysLh70lE25053JEzJaTYsvrQGfRE",
                       language: "eg",
                       onSelected: (Place place) async {
                         final geolocation = await place.geolocation;
 
-                        print(geolocation.coordinates);
                         // Will animate the GoogleMap camera, taking us to the selected position with an appropriate zoom
                         setState(() {
                           location = geolocation.coordinates;

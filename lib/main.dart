@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
-import 'package:hovo_design/screens/AccountsSettings.dart';
-import 'package:hovo_design/screens/ReviewScreen.dart';
-import 'package:hovo_design/screens/RideHistory.dart';
-import 'package:hovo_design/screens/showBottomSheet.dart';
+
+import 'package:hovo_design/screens/HomeDesign.dart';
+
 
 void main() {
   runApp(MyApp());
@@ -20,6 +19,6 @@ class MyApp extends StatelessWidget {
           fontFamily: "Poppins",
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
-        home: ShowBottomSheet());
+        home: HomesDesign());
   }
 }
