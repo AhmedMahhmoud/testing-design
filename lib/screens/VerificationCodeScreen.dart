@@ -97,43 +97,41 @@ class _VerficationCodeScreenState extends State<VerficationCodeScreen> {
                   ),
                   Card(
                     elevation: 5,
-                    child: Expanded(
-                      child: Container(
-                        child: PinCodeTextField(
-                          autoDisposeControllers: false,
-                          keyboardType: TextInputType.number,
-                          appContext: context,
-                          length: 6,
-                          onSubmitted: (value) {
-                            print("value is $value");
-                          },
-                          pinTheme: PinTheme(inactiveColor: Colors.black),
-                          obscureText: false,
-                          animationType: AnimationType.scale,
-                          animationDuration: Duration(milliseconds: 300),
-                          controller: controller,
-                          cursorColor: Colors.black,
-                          onCompleted: (v) {
-                            print("Completed");
-                            print("value is $v");
-                            setState(() {
-                              isvisible = true;
-                              smscode = v;
-                            });
-                          },
-                          onChanged: (value) {
-                            print(value);
-                            setState(() {
-                              currentText = value;
-                            });
-                          },
-                          beforeTextPaste: (text) {
-                            print("Allowing to paste $text");
-                            //if you return true then it will show the paste confirmation dialog. Otherwise if false, then nothing will happen.
-                            //but you can show anything you want here, like your pop up saying wrong paste format or etc
-                            return true;
-                          },
-                        ),
+                    child: Container(
+                      child: PinCodeTextField(
+                        autoDisposeControllers: false,
+                        keyboardType: TextInputType.number,
+                        appContext: context,
+                        length: 6,
+                        onSubmitted: (value) {
+                          print("value is $value");
+                        },
+                        pinTheme: PinTheme(inactiveColor: Colors.black),
+                        obscureText: false,
+                        animationType: AnimationType.scale,
+                        animationDuration: Duration(milliseconds: 300),
+                        controller: controller,
+                        cursorColor: Colors.black,
+                        onCompleted: (v) {
+                          print("Completed");
+                          print("value is $v");
+                          setState(() {
+                            isvisible = true;
+                            smscode = v;
+                          });
+                        },
+                        onChanged: (value) {
+                          print(value);
+                          setState(() {
+                            currentText = value;
+                          });
+                        },
+                        beforeTextPaste: (text) {
+                          print("Allowing to paste $text");
+                          //if you return true then it will show the paste confirmation dialog. Otherwise if false, then nothing will happen.
+                          //but you can show anything you want here, like your pop up saying wrong paste format or etc
+                          return true;
+                        },
                       ),
                     ),
                   ),

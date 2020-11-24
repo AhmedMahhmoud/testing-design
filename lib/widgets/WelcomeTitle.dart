@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -33,7 +34,7 @@ class WelcomeTitle extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("Hello, Ahmed"),
+                Text("Hello, ${FirebaseAuth.instance.currentUser.displayName}"),
                 Text(
                   "Where is the $direction point ?",
                   style: TextStyle(

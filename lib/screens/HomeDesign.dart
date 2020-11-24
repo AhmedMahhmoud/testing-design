@@ -1,6 +1,9 @@
 import 'dart:async';
+
 import 'dart:ui';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 
@@ -119,7 +122,7 @@ class _HomesDesignState extends State<HomesDesign>
       // get a LatLng for the source location
       // from the LocationData currentLocation object
       var pinPosition =
-          LatLng(currentLocation.latitude, currentLocation.longitude);
+          LatLng(pickUpLocation.latitude, pickUpLocation.longitude);
       // get a LatLng out of the LocationData object
       var destPosition =
           LatLng(dropOffLocation.latitude, dropOffLocation.longitude);
@@ -148,8 +151,8 @@ class _HomesDesignState extends State<HomesDesign>
       List<PointLatLng> result =
           await polylinePoints.getRouteBetweenCoordinates(
               googleAPIKey,
-              currentLocation.latitude,
-              currentLocation.longitude,
+              pickUpLocation.latitude,
+              pickUpLocation.longitude,
               dropOffLocation.latitude,
               dropOffLocation.longitude);
       if (result.isNotEmpty) {
@@ -197,12 +200,11 @@ class _HomesDesignState extends State<HomesDesign>
       // current user's position in real time,
 
       currentLocation = cLoc;
-      // updatePinOnMap();
+
       setSourceAndDestinationIcons();
-      // set the initial location
-      // setInitialLocation();
-    });
-    // set custom marker pins
+    }); // updatePinOnMap();
+    // set custom marker pins   // set the initial location
+    // setInitialLocation();
 
     // set the initial location
     setInitialLocation();
@@ -311,128 +313,311 @@ class _HomesDesignState extends State<HomesDesign>
                       top: 100,
                       child: showVechi
                           ? Container()
-                          : Card(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(9.0),
-                              ),
-                              shadowColor: Colors.blue,
-                              elevation: 2,
-                              child: InkWell(
-                                onTap: () async {
-                                  var result = await Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => LocationPicker(
-                                                pageCategory: "home",
-                                              )));
-                                  if (result != null) {
-                                    print(result);
-                                    direction == "pickup"
-                                        ? setState(() {
-                                            pickUpLocation = result[0];
-                                            pickUpText = result[1];
-
-                                            direction = "drop off";
-                                            showPickUploc = true;
-                                            _animationController.forward();
-                                          })
-                                        : setState(() {
-                                            dropOffLocation = result[0];
-
-                                            dropOffText = result[1];
-                                            _controller.animateCamera(
-                                                CameraUpdate.newLatLng(LatLng(
-                                                    result[0].latitude,
-                                                    result[0].longitude)));
-                                            showWelcomeMessage = false;
-                                            showVechi = true;
-                                            _animationController.forward(
-                                                from: 0);
-                                          });
-                                    showPinsOnMap();
-                                  }
-                                },
-                                child: Container(
-                                  decoration: BoxDecoration(),
-                                  padding: EdgeInsets.all(15),
-                                  width: Get.width / 2,
-                                  child: Column(
-                                    children: [
-                                      Text(
-                                        "Add Home",
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.w500),
+                          : FutureBuilder<DocumentSnapshot>(
+                              future: FirebaseFirestore.instance
+                                  .collection("users")
+                                  .doc(FirebaseAuth.instance.currentUser.uid)
+                                  .get(),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {}
+                                if (snapshot.hasData) {
+                                  return Card(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(9.0),
                                       ),
-                                      Icon(
-                                        Icons.house,
-                                        color: Colors.black,
-                                      )
-                                    ],
-                                  ),
-                                ),
-                              )),
+                                      shadowColor: Colors.blue,
+                                      elevation: 2,
+                                      child: InkWell(
+                                        onTap: snapshot.data.data()["home"] ==
+                                                ""
+                                            ? () async {
+                                                var result =
+                                                    await Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                            builder: (context) =>
+                                                                LocationPicker(
+                                                                  pageCategory:
+                                                                      "home",
+                                                                )));
+                                                if (result != null) {
+                                                  await FirebaseFirestore
+                                                      .instance
+                                                      .collection("users")
+                                                      .doc(FirebaseAuth.instance
+                                                          .currentUser.uid)
+                                                      .update(
+                                                    {
+                                                      "home": result[1],
+                                                      "homeLat": GeoPoint(
+                                                          result[0].latitude,
+                                                          result[0].longitude)
+                                                    },
+                                                  );
+
+                                                  direction == "pickup"
+                                                      ? setState(() {
+                                                          pickUpLocation =
+                                                              result[0];
+                                                          pickUpText =
+                                                              result[1];
+
+                                                          direction =
+                                                              "drop off";
+                                                          showPickUploc = true;
+                                                          _animationController
+                                                              .forward();
+                                                        })
+                                                      : setState(() {
+                                                          dropOffLocation =
+                                                              result[0];
+
+                                                          dropOffText =
+                                                              result[1];
+                                                          _controller.animateCamera(
+                                                              CameraUpdate.newLatLng(LatLng(
+                                                                  result[0]
+                                                                      .latitude,
+                                                                  result[0]
+                                                                      .longitude)));
+                                                          showWelcomeMessage =
+                                                              false;
+                                                          showVechi = true;
+                                                          _animationController
+                                                              .forward(from: 0);
+                                                        });
+                                                  showPinsOnMap();
+                                                }
+                                              }
+                                            : direction == "pickup"
+                                                ? () {
+                                                    setState(() {
+                                                      pickUpText = snapshot.data
+                                                          .data()["home"];
+                                                      showPickUploc = true;
+                                                      pickUpLocation = LatLng(
+                                                          snapshot.data
+                                                              .data()["homeLat"]
+                                                              .latitude,
+                                                          snapshot.data
+                                                              .data()["homeLat"]
+                                                              .longitude);
+                                                      direction = "drop off";
+                                                      _animationController
+                                                          .forward();
+                                                    });
+                                                  }
+                                                : () {
+                                                    setState(() {
+                                                      dropOffText = snapshot
+                                                          .data
+                                                          .data()["home"];
+                                                      showVechi = true;
+
+                                                      dropOffLocation = LatLng(
+                                                          snapshot.data
+                                                              .data()["homeLat"]
+                                                              .latitude,
+                                                          snapshot.data
+                                                              .data()["homeLat"]
+                                                              .longitude);
+                                                      showWelcomeMessage =
+                                                          false;
+                                                      _animationController
+                                                          .forward(from: 0);
+                                                      _controller.animateCamera(
+                                                          CameraUpdate.newLatLng(LatLng(
+                                                              snapshot.data
+                                                                  .data()[
+                                                                      "homeLat"]
+                                                                      [0]
+                                                                  .latitude,
+                                                              snapshot.data
+                                                                  .data()[
+                                                                      "homeLat"]
+                                                                      [0]
+                                                                  .longitude)));
+                                                      showPinsOnMap();
+                                                    });
+                                                  },
+                                        child: Container(
+                                          decoration: BoxDecoration(),
+                                          padding: EdgeInsets.all(15),
+                                          width: Get.width / 2,
+                                          child: Column(
+                                            children: [
+                                              Text(
+                                                "Add Home",
+                                                style: TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.w500),
+                                              ),
+                                              Icon(
+                                                Icons.house,
+                                                color: Colors.black,
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                      ));
+                                }
+                                return Container();
+                              }),
                     ),
                     Positioned(
                       top: 100,
                       right: 0,
                       child: showVechi
                           ? Container()
-                          : Card(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(9.0),
-                              ),
-                              shadowColor: Colors.blue,
-                              elevation: 3,
-                              child: InkWell(
-                                onTap: () async {
-                                  var result = await Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => LocationPicker(
-                                                pageCategory: "work",
-                                              )));
-                                  if (result != null) {
-                                    direction == "drop off"
-                                        ? setState(() {
-                                            dropOffLocation = result[0];
-                                            showPinsOnMap();
-                                            dropOffText = result[1];
-                                            showWelcomeMessage = false;
-                                            showVechi = true;
-                                            _animationController.forward(
-                                                from: 0);
-                                            // showCurrentLoc = false;
-                                          })
-                                        : setState(() {
-                                            pickUpLocation = result[0];
-                                            pickUpText = result[1];
-                                            direction = "drop off";
-                                            showPickUploc = true;
-                                            _controller.animateCamera(
-                                                CameraUpdate.newLatLng(LatLng(
-                                                    result[0].latitude,
-                                                    result[0].longitude)));
+                          : FutureBuilder<DocumentSnapshot>(
+                              future: FirebaseFirestore.instance
+                                  .collection("users")
+                                  .doc(FirebaseAuth.instance.currentUser.uid)
+                                  .get(),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {}
+                                if (snapshot.hasData) {
+                                  return Card(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(9.0),
+                                      ),
+                                      shadowColor: Colors.blue,
+                                      elevation: 3,
+                                      child: InkWell(
+                                        onTap: snapshot.data.data()["work"] ==
+                                                ""
+                                            ? () async {
+                                                var result =
+                                                    await Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                            builder: (context) =>
+                                                                LocationPicker(
+                                                                  pageCategory:
+                                                                      "work",
+                                                                )));
+                                                if (result != null) {
+                                                  await FirebaseFirestore
+                                                      .instance
+                                                      .collection("users")
+                                                      .doc(FirebaseAuth.instance
+                                                          .currentUser.uid)
+                                                      .update(
+                                                    {
+                                                      "work": result[1],
+                                                      "workLat": GeoPoint(
+                                                          result[0].latitude,
+                                                          result[0].longitude)
+                                                    },
+                                                  );
+                                                  direction == "drop off"
+                                                      ? setState(() {
+                                                          dropOffLocation =
+                                                              result[0];
+                                                          showPinsOnMap();
+                                                          dropOffText =
+                                                              result[1];
+                                                          showWelcomeMessage =
+                                                              false;
+                                                          showVechi = true;
+                                                          _animationController
+                                                              .forward(from: 0);
+                                                          _controller.animateCamera(
+                                                              CameraUpdate.newLatLng(LatLng(
+                                                                  result
+                                                                      .latitude,
+                                                                  result
+                                                                      .longitude)));
+                                                          showPinsOnMap();
+                                                          // showCurrentLoc = false;
+                                                        })
+                                                      : setState(() {
+                                                          pickUpLocation =
+                                                              result[0];
+                                                          pickUpText =
+                                                              result[1];
+                                                          direction =
+                                                              "drop off";
+                                                          showPickUploc = true;
 
-                                            _animationController.forward();
-                                            // showCurrentLoc = false;
-                                          });
-                                  }
-                                },
-                                child: Container(
-                                  decoration: BoxDecoration(),
-                                  padding: EdgeInsets.all(15),
-                                  width: Get.width / 2.1,
-                                  child: Column(
-                                    children: [
-                                      Text("Add Work"),
-                                      Icon(
-                                        Icons.work,
-                                        color: Colors.black,
-                                      )
-                                    ],
-                                  ),
-                                ),
-                              )),
+                                                          _animationController
+                                                              .forward();
+                                                          // showCurrentLoc = false;
+                                                        });
+                                                }
+                                              }
+                                            : direction == "pickup"
+                                                ? () {
+                                                    setState(() {
+                                                      pickUpLocation = LatLng(
+                                                          snapshot.data
+                                                              .data()["workLat"]
+                                                              .latitude,
+                                                          snapshot.data
+                                                              .data()["workLat"]
+                                                              .longitude);
+
+                                                      pickUpText = snapshot.data
+                                                          .data()["work"];
+                                                      direction = "drop off";
+                                                      showPickUploc = true;
+                                                      _animationController
+                                                          .forward(from: 0);
+                                                    });
+                                                  }
+                                                : () {
+                                                    setState(() {
+                                                      dropOffLocation = LatLng(
+                                                          snapshot.data
+                                                              .data()["workLat"]
+                                                              .latitude,
+                                                          snapshot.data
+                                                              .data()["workLat"]
+                                                              .longitude);
+                                                      showPinsOnMap();
+                                                      dropOffText = snapshot
+                                                          .data
+                                                          .data()["work"];
+                                                      showWelcomeMessage =
+                                                          false;
+                                                      showVechi = true;
+                                                      _controller.animateCamera(
+                                                          CameraUpdate.newLatLng(LatLng(
+                                                              snapshot.data
+                                                                  .data()[
+                                                                      "workLat"]
+                                                                  .latitude,
+                                                              snapshot.data
+                                                                  .data()[
+                                                                      "workLat"]
+                                                                  .longitude)));
+                                                      showPinsOnMap();
+                                                      _animationController
+                                                          .forward(from: 0);
+                                                    });
+                                                  },
+                                        child: Container(
+                                          decoration: BoxDecoration(),
+                                          padding: EdgeInsets.all(15),
+                                          width: Get.width / 2.1,
+                                          child: Column(
+                                            children: [
+                                              Text("Add Work"),
+                                              Icon(
+                                                Icons.work,
+                                                color: Colors.black,
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                      ));
+                                }
+                                return Container();
+                              }),
                     ),
                     Positioned(
                       top: showVechi
@@ -460,9 +645,20 @@ class _HomesDesignState extends State<HomesDesign>
                                     onSelected: (Place place) async {
                                       final geolocation =
                                           await place.geolocation;
-                                      pickUpLocation = geolocation.coordinates;
+
                                       // Will animate the GoogleMap camera, taking us to the selected position with an appropriate zoom
                                       setState(() {
+                                        pickUpLocation =
+                                            geolocation.coordinates;
+                                        _controller.animateCamera(
+                                            CameraUpdate.newLatLng(
+                                                geolocation.coordinates));
+                                        _controller.animateCamera(
+                                            CameraUpdate.newLatLngBounds(
+                                                geolocation.bounds, 0));
+
+                                        showPinsOnMap();
+
                                         direction = "drop off";
                                         showPickUploc = true;
                                         _animationController.forward(from: 0);
