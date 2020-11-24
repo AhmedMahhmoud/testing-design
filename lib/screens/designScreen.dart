@@ -1,10 +1,8 @@
 import 'dart:ui';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:hovo_design/screens/VerificationCodeScreen.dart';
+
 import 'package:hovo_design/widgets/LogoStackWid.dart';
 
 class DesignPage extends StatefulWidget {
@@ -16,9 +14,6 @@ TextEditingController phoneController = TextEditingController();
 
 class _DesignPageState extends State<DesignPage> {
   String _verificationId;
-  Future<void> addd() async {
-    await FirebaseFirestore.instance.collection("aaa").add({"a": "a"});
-  }
 
   Future<void> _requestSMSCodeUsingPhoneNumber() async {
     try {
@@ -26,13 +21,21 @@ class _DesignPageState extends State<DesignPage> {
       await FirebaseAuth.instance.verifyPhoneNumber(
           phoneNumber: "+20 " + phoneController.text,
           timeout: Duration(seconds: 60),
-          verificationCompleted: (AuthCredential phoneAuthCredential) =>
-              print('Sign up with phone complete'),
-          verificationFailed: (error) =>
+          verificationCompleted: (AuthCredential phoneAuthCredential) async {
+            await FirebaseAuth.instance
+                .signInWithCredential(phoneAuthCredential)
+                .then((value) => print(value.user.uid));
+
+            print('Sign up with phone complete');
+          },
+          verificationFailed: (FirebaseAuthException error) =>
               print('error message is ${error.message}'),
           codeSent: (String verificationId, [int forceResendingToken]) {
             print('verificationId is $verificationId');
-            setState(() => _verificationId = verificationId);
+            setState(() {
+              _verificationId = verificationId;
+              print(_verificationId);
+            });
           },
           codeAutoRetrievalTimeout: (value) {
             print(value);
