@@ -1,11 +1,16 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'designScreen.dart';
 
 class VerficationCodeScreen extends StatefulWidget {
+  final String verifyid;
+
+  VerficationCodeScreen(this.verifyid);
   @override
   _VerficationCodeScreenState createState() => _VerficationCodeScreenState();
 }
@@ -15,15 +20,29 @@ TextEditingController controller = new TextEditingController();
 StreamController<ErrorAnimationType> errorController =
     StreamController<ErrorAnimationType>();
 var isvisible = false;
+var smscode;
 
 class _VerficationCodeScreenState extends State<VerficationCodeScreen> {
+  void _signInWithPhoneNumberAndSMSCode() async {
+    AuthCredential authCreds = PhoneAuthProvider.credential(
+        verificationId: widget.verifyid, smsCode: smscode);
+    final User user =
+        (await FirebaseAuth.instance.signInWithCredential(authCreds)).user;
+    print("User Phone number is" + user.phoneNumber);
+
+    FocusScope.of(context).requestFocus(FocusNode());
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       floatingActionButton: Visibility(
         visible: isvisible,
         child: FloatingActionButton(
-          onPressed: () {},
+          onPressed: () {
+            print(smscode);
+            _signInWithPhoneNumberAndSMSCode();
+          },
           child: Icon(Icons.arrow_forward),
         ),
       ),
@@ -78,56 +97,58 @@ class _VerficationCodeScreenState extends State<VerficationCodeScreen> {
                   ),
                   Card(
                     elevation: 5,
-                    child: Container(
-                      padding: EdgeInsets.only(right: 20, left: 20),
-                      child: PinCodeTextField(
-                        autoDisposeControllers: false,
-                        keyboardType: TextInputType.number,
-                        appContext: context,
-                        length: 4,
-                        onSubmitted: (value) {
-                          print("value is $value");
-                        },
-                        pinTheme: PinTheme(inactiveColor: Colors.black),
-                        obscureText: false,
-                        animationType: AnimationType.scale,
-                        animationDuration: Duration(milliseconds: 300),
-                        controller: controller,
-                        cursorColor: Colors.black,
-                        onCompleted: (v) {
-                          print("Completed");
-                          print("value is $v");
-                          setState(() {
-                            isvisible = true;
-                          });
-                        },
-                        onChanged: (value) {
-                          print(value);
-                          setState(() {
-                            currentText = value;
-                          });
-                        },
-                        beforeTextPaste: (text) {
-                          print("Allowing to paste $text");
-                          //if you return true then it will show the paste confirmation dialog. Otherwise if false, then nothing will happen.
-                          //but you can show anything you want here, like your pop up saying wrong paste format or etc
-                          return true;
-                        },
+                    child: Expanded(
+                      child: Container(
+                        child: PinCodeTextField(
+                          autoDisposeControllers: false,
+                          keyboardType: TextInputType.number,
+                          appContext: context,
+                          length: 6,
+                          onSubmitted: (value) {
+                            print("value is $value");
+                          },
+                          pinTheme: PinTheme(inactiveColor: Colors.black),
+                          obscureText: false,
+                          animationType: AnimationType.scale,
+                          animationDuration: Duration(milliseconds: 300),
+                          controller: controller,
+                          cursorColor: Colors.black,
+                          onCompleted: (v) {
+                            print("Completed");
+                            print("value is $v");
+                            setState(() {
+                              isvisible = true;
+                              smscode = v;
+                            });
+                          },
+                          onChanged: (value) {
+                            print(value);
+                            setState(() {
+                              currentText = value;
+                            });
+                          },
+                          beforeTextPaste: (text) {
+                            print("Allowing to paste $text");
+                            //if you return true then it will show the paste confirmation dialog. Otherwise if false, then nothing will happen.
+                            //but you can show anything you want here, like your pop up saying wrong paste format or etc
+                            return true;
+                          },
+                        ),
                       ),
                     ),
                   ),
                   SizedBox(
                     height: 20,
                   ),
-                  Row(
-                    children: [
-                      Text("Resend code in"),
-                      Text(
-                        "10 seconds",
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      )
-                    ],
-                  )
+                  // Row(
+                  //   children: [
+                  //     Text("Resend code in"),
+                  //     Text(
+                  //       "10 seconds",
+                  //       style: TextStyle(fontWeight: FontWeight.bold),
+                  //     )
+                  //   ],
+                  // )
                 ],
               ),
             ),

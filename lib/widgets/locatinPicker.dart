@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:geocoder/geocoder.dart';
+import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:search_map_place/search_map_place.dart';
@@ -116,27 +117,30 @@ class _LocationPickerState extends State<LocationPicker> {
                               currentLocation.longitude))),
                   Positioned(
                     top: 0,
-                    child: SearchMapPlaceWidget(
-                      hasClearButton: true,
-                      location: LatLng(
-                          currentLocation.latitude, currentLocation.longitude),
-                      radius: 30000,
-                      placeholder: "Search certain location",
-                      apiKey: "AIzaSyCyt_eysLh70lE25053JEzJaTYsvrQGfRE",
-                      language: "eg",
-                      onSelected: (Place place) async {
-                        final geolocation = await place.geolocation;
+                    child: Container(
+                      width: Get.width,
+                      child: SearchMapPlaceWidget(
+                        hasClearButton: true,
+                        location: LatLng(currentLocation.latitude,
+                            currentLocation.longitude),
+                        radius: 30000,
+                        placeholder: "Search certain location",
+                        apiKey: "AIzaSyCyt_eysLh70lE25053JEzJaTYsvrQGfRE",
+                        language: "eg",
+                        onSelected: (Place place) async {
+                          final geolocation = await place.geolocation;
 
-                        // Will animate the GoogleMap camera, taking us to the selected position with an appropriate zoom
-                        setState(() {
-                          location = geolocation.coordinates;
-                          _controller.animateCamera(
-                              CameraUpdate.newLatLng(geolocation.coordinates));
-                          _controller.animateCamera(
-                              CameraUpdate.newLatLngBounds(
-                                  geolocation.bounds, 0));
-                        });
-                      },
+                          // Will animate the GoogleMap camera, taking us to the selected position with an appropriate zoom
+                          setState(() {
+                            location = geolocation.coordinates;
+                            _controller.animateCamera(CameraUpdate.newLatLng(
+                                geolocation.coordinates));
+                            _controller.animateCamera(
+                                CameraUpdate.newLatLngBounds(
+                                    geolocation.bounds, 0));
+                          });
+                        },
+                      ),
                     ),
                   ),
                 ],

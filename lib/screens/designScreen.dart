@@ -1,12 +1,62 @@
+import 'dart:ui';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:hovo_design/screens/VerificationCodeScreen.dart';
 import 'package:hovo_design/widgets/LogoStackWid.dart';
 
-class DesignPage extends StatelessWidget {
+class DesignPage extends StatefulWidget {
+  @override
+  _DesignPageState createState() => _DesignPageState();
+}
+
+TextEditingController phoneController = TextEditingController();
+
+class _DesignPageState extends State<DesignPage> {
+  String _verificationId;
+  Future<void> addd() async {
+    await FirebaseFirestore.instance.collection("aaa").add({"a": "a"});
+  }
+
+  Future<void> _requestSMSCodeUsingPhoneNumber() async {
+    try {
+      print(phoneController.text);
+      await FirebaseAuth.instance.verifyPhoneNumber(
+          phoneNumber: "+20 " + phoneController.text,
+          timeout: Duration(seconds: 60),
+          verificationCompleted: (AuthCredential phoneAuthCredential) =>
+              print('Sign up with phone complete'),
+          verificationFailed: (error) =>
+              print('error message is ${error.message}'),
+          codeSent: (String verificationId, [int forceResendingToken]) {
+            print('verificationId is $verificationId');
+            setState(() => _verificationId = verificationId);
+          },
+          codeAutoRetrievalTimeout: (value) {
+            print(value);
+          });
+    } catch (e) {
+      print(e);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
+        floatingActionButton: phoneController.text.length == 11
+            ? FloatingActionButton(
+                onPressed: () async {
+                  await _requestSMSCodeUsingPhoneNumber();
+                },
+                child: Center(
+                  child: Icon(Icons.arrow_forward),
+                ),
+              )
+            : Container(),
         body: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -54,9 +104,20 @@ class DesignPage extends StatelessWidget {
                               ),
                               Expanded(
                                 child: TextFormField(
+                                  controller: phoneController,
+                                  validator: (String value) =>
+                                      value.trim().isEmpty
+                                          ? 'Phone is required'
+                                          : null,
+                                  style: TextStyle(letterSpacing: 2),
                                   cursorColor: Colors.black,
                                   keyboardType: TextInputType.phone,
                                   decoration: InputDecoration(
+                                      suffixIcon: InkWell(
+                                        onTap: () =>
+                                            FocusScope.of(context).unfocus(),
+                                        child: Icon(Icons.check),
+                                      ),
                                       border: InputBorder.none,
                                       hintText: "Enter your phone number"),
                                 ),
