@@ -780,7 +780,7 @@ class _HomesDesignState extends State<HomesDesign>
                     showVechi
                         ? Opacity(
                             opacity: _animationController.value,
-                            child: Vechiles())
+                            child: Vechiles(pickUpLocation, dropOffLocation))
                         : Container()
                   ],
                 );

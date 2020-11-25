@@ -19,35 +19,35 @@ class _DesignPageState extends State<DesignPage> {
 
   Future<void> _requestSMSCodeUsingPhoneNumber() async {
     try {
-      FirebaseAuth.instance
-          .createUserWithEmailAndPassword(
-              email: "ahmed@gmail.com", password: "123456")
-          .then((value) async {
-        await FirebaseAuth.instance.currentUser
-            .updateProfile(displayName: "ahmed");
+      // FirebaseAuth.instance
+      //     .createUserWithEmailAndPassword(
+      //         email: "ahmed@gmail.com", password: "123456")
+      //     .then((value) async {
+      //   await FirebaseAuth.instance.currentUser
+      //       .updateProfile(displayName: "ahmed");
+      
+      // });
+
+      print(phoneController.text);
+        await FirebaseAuth.instance.verifyPhoneNumber(
+            phoneNumber: "+20" + phoneController.text,
+            timeout: Duration(seconds: 60),
+            verificationCompleted: (AuthCredential phoneAuthCredential) {
+              print('Sign up with phone complete');
+            },
+            verificationFailed: (FirebaseAuthException error) =>
+                print('error message is ${error.message}'),
+            codeSent: (String verificationId, [int forceResendingToken]) {
+              print('verificationId is $verificationId');
+              setState(() {
+                _verificationId = verificationId;
+                print(_verificationId);
+              });
+            },
+            codeAutoRetrievalTimeout: (value) {
+              print(value);
       
       });
-
-      // print(phoneController.text);
-      //   await FirebaseAuth.instance.verifyPhoneNumber(
-      //       phoneNumber: "+20" + phoneController.text,
-      //       timeout: Duration(seconds: 60),
-      //       verificationCompleted: (AuthCredential phoneAuthCredential) {
-      //         print('Sign up with phone complete');
-      //       },
-      //       verificationFailed: (FirebaseAuthException error) =>
-      //           print('error message is ${error.message}'),
-      //       codeSent: (String verificationId, [int forceResendingToken]) {
-      //         print('verificationId is $verificationId');
-      //         setState(() {
-      //           _verificationId = verificationId;
-      //           print(_verificationId);
-      //         });
-      //       },
-      //       codeAutoRetrievalTimeout: (value) {
-      //         print(value);
-      //
-      //});
     } catch (e) {
       print(e);
     }
