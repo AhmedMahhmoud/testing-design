@@ -20,6 +20,7 @@ class Vechiles extends StatefulWidget {
   _VechilesState createState() => _VechilesState();
 }
 
+var showvech = true;
 List<Map> myMap = [
   {"image": "lib/assets/images/1.5 ton.png", "name": "1.5 ton", "price": "30"},
   {
@@ -58,7 +59,7 @@ class _VechilesState extends State<Vechiles> {
     return Align(
         alignment: Alignment.bottomCenter,
         child: Container(child: StatefulBuilder(builder: (context, setState) {
-          return Container(
+          return showvech? Container(
               width: 280,
               decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.8),
@@ -133,20 +134,107 @@ class _VechilesState extends State<Vechiles> {
                           Spacer(),
                           InkWell(
                             onTap: () async {
-                              await FirebaseFirestore.instance
-                                  .collection("shipments")
-                                  .add({
-                                "userID": FirebaseAuth.instance.currentUser.uid,
-                                "shipDate": DateTime.now(),
-                                "userLat": widget.pickUpPos.latitude,
-                                "userLon": widget.pickUpPos.longitude,
-                                "veichName": myMap[currentIndex]["name"],
-                                "veichImg": myMap[currentIndex]["image"],
-                                "dropOffLat": widget.dropOffPos.latitude,
-                                "dropOffLong": widget.dropOffPos.longitude,
-                                "rate": 0,
-                                "price": myMap[currentIndex]["price"]
-                              });
+                              Dialog errorDialog = Dialog(
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                        12.0)), //this right here
+                                child: Container(
+                                  width: 300,
+                                  height: 300,
+                                  child: Column(
+                                    children: <Widget>[
+                                      Center(
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(16.0),
+                                          child: Text(
+                                            'Are you sure you want to confirm your order ?',
+                                            style: TextStyle(
+                                                fontSize: 17,
+                                                color: Colors.green,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
+                                      ),
+                                      InkWell(
+                                        onTap: () {},
+                                        child: Container(
+                                          padding: EdgeInsets.only(top: 30),
+                                          child: Column(
+                                            children: [
+                                              InkWell(
+                                                onTap: () async {
+                                                  await FirebaseFirestore
+                                                      .instance
+                                                      .collection("shipments")
+                                                      .add({
+                                                        "userID": FirebaseAuth
+                                                            .instance
+                                                            .currentUser
+                                                            .uid,
+                                                        "shipDate":
+                                                            DateTime.now(),
+                                                        "userLat": widget
+                                                            .pickUpPos.latitude,
+                                                        "userLon": widget
+                                                            .pickUpPos
+                                                            .longitude,
+                                                        "veichName":
+                                                            myMap[currentIndex]
+                                                                ["name"],
+                                                        "veichImg":
+                                                            myMap[currentIndex]
+                                                                ["image"],
+                                                        "dropOffLat": widget
+                                                            .dropOffPos
+                                                            .latitude,
+                                                        "dropOffLong": widget
+                                                            .dropOffPos
+                                                            .longitude,
+                                                        "rate": 0,
+                                                        "price":
+                                                            myMap[currentIndex]
+                                                                ["price"]
+                                                      })
+                                                      .then((value) =>
+                                                          Navigator.pop(
+                                                              context))
+                                                      .then((value) {
+                                                        setState(() {
+                                                          showvech = false;
+                                                        });
+                                                      });
+                                                },
+                                                child: Text(
+                                                  'Yes',
+                                                  style: TextStyle(
+                                                      fontSize: 20,
+                                                      color: Colors.green),
+                                                ),
+                                              ),
+                                              FlatButton(
+                                                  onPressed: () =>
+                                                      Navigator.pop(context),
+                                                  child: Text(
+                                                    'No',
+                                                    style: TextStyle(
+                                                        color: Colors.red,
+                                                        fontSize: 20),
+                                                  )),
+                                              SizedBox(
+                                                height: 40,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                              showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) =>
+                                      errorDialog);
                             },
                             child: Container(
                                 width: 80,
@@ -170,7 +258,7 @@ class _VechilesState extends State<Vechiles> {
                     ),
                   ],
                 ),
-              ));
+              )):Container();
         })));
   }
 }
